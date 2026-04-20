@@ -487,8 +487,8 @@
       <div class="layer" id="l-product" onclick="sel('product')">
         <span class="layer-num">L6</span>
         <div class="dyn-badge">dynamic</div>
-        <div class="layer-title">Products &amp; Attributes</div>
-        <div class="layer-desc">DIA, SIP, SD-WAN, managed services — each with its own attribute set</div>
+        <div class="layer-title">Items &amp; Attributes</div>
+        <div class="layer-desc">Reusable building blocks — circuit, surcharge, IP block, DDI, CPE</div>
       </div>
     </div>
 
@@ -563,26 +563,26 @@ const data = {
     insight: "<strong>A site's commercial life generates many orders — not just one.</strong> Each is anchored to the Solution it belongs to, so the full history is always traceable without manual cross-referencing."
   },
   package: {
-    title: "Packages are assembled at quote time, not pre-built",
+    title: "Package / Product defines what works together",
     scope: "both",
-    tags: [["connectivity only","teal"],["connectivity + voice","purple"],["site-in-a-box","amber"],["managed stack","coral"]],
+    tags: [["mandatory items","teal"],["optional items","gray"],["choose 1","purple"],["choose 1 with qty","amber"],["nested packages","coral"]],
     examples: [
-      { name: "Branch connectivity", attrs: ["DIA 100Mbps","4G failover","managed router"] },
-      { name: "UC bundle", attrs: ["SIP ×50ch","DDI block","Teams Direct Routing"] },
-      { name: "Site-in-a-Box", attrs: ["DIA + 4G failover","SD-WAN CPE","managed firewall","SIP trunking"] }
+      { name: "DIA Internet Package", attrs: ["mandatory: circuit item (qty 1)","mandatory: billing surcharge item","choose 1: IP address block (/29, /28, /27)","optional: router package (nested)"] },
+      { name: "Router Package (nested)", attrs: ["mandatory: CPE item (qty 1)","choose 1: router model","optional: 4G failover item (qty 1, 2, or 3 SIMs)"] },
+      { name: "SIP Trunking Package", attrs: ["mandatory: SIP channel item","choose 1 with qty: DDI range (qty 1-10)","optional: call recording item"] }
     ],
-    insight: "<strong>No two enterprise customers buy the same combination.</strong> Packages are configured from available products — account managers aren't constrained by rigid catalogue bundles or forced into multiple separate orders."
+    insight: "<strong>A Package / Product is a rules engine as much as a bundle.</strong> It governs which items are mandatory, which are selectable, how many can be chosen, and which other packages can nest within it — so configuration is guided, not freeform."
   },
   product: {
-    title: "Each product type defines its own attributes",
+    title: "Items are reusable building blocks across packages",
     scope: "both",
-    tags: [["DIA","teal"],["SIP trunking","purple"],["SD-WAN","amber"],["managed firewall","coral"],["MPLS","gray"]],
+    tags: [["circuit item","teal"],["billing surcharge","gray"],["IP address block","purple"],["DDI range","amber"],["CPE / handset","coral"]],
     examples: [
-      { name: "Dedicated Internet Access", attrs: ["bandwidth: 10M–100G","bearer: fibre / EFM","SLA: 99.95%","burstable: yes/no"] },
-      { name: "SIP Trunking", attrs: ["channels: 1–2000","DDI range","codec: G.711/G.729","failover: yes/no"] },
-      { name: "Managed SD-WAN", attrs: ["sites: 1–500","underlay: MPLS+4G","vendor: Meraki / Fortinet"] }
+      { name: "Internet circuit item", attrs: ["bandwidth: 10M-100G","bearer: fibre / EFM","SLA: 99.95%","used in: DIA, FTTP, EFM packages"] },
+      { name: "IP address block item", attrs: ["type: /29, /28, /27","choose 1 in parent package","used in: multiple internet packages"] },
+      { name: "Billing surcharge item", attrs: ["type: regulatory / carrier","mandatory in most packages","reused across DIA, FTTP, SIP"] }
     ],
-    insight: "<strong>A DIA circuit and a SIP trunk have nothing structurally in common.</strong> Each product type carries only the attributes relevant to quoting, provisioning, and assurance — no bloated universal schema, no blank fields."
+    insight: "<strong>Items are shared across packages — not duplicated.</strong> The same IP address block item or billing surcharge can appear in any package that needs it, keeping the item catalogue clean. Only the core package item needs to be unique."
   },
   portal: {
     title: "The portal adapts to account type and role",
