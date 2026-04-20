@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B2B Telecom — Dynamic Hierarchy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1917;
+    --text-2: #6b6860;
+    --text-3: #9e9b94;
+    --purple: #4f46a0;
+    --purple-bg: #eeedf8;
+    --purple-border: #c4c1ea;
+    --teal: #0d6b54;
+    --teal-bg: #e0f4ee;
+    --teal-border: #9fdecb;
+    --amber: #7a4a0a;
+    --amber-bg: #faeeda;
+    --amber-border: #f5c97a;
+    --coral: #8c3620;
+    --coral-bg: #faeae6;
+    --coral-border: #f4bfb0;
+    --gray-tag: #4a4845;
+    --gray-tag-bg: #eeece8;
+    --gray-tag-border: #d4d1cb;
+    --accent: #4f46a0;
+    --accent-light: #eeedf8;
+    --accent-border: #c4c1ea;
+    --success: #0d6b54;
+    --success-bg: #e0f4ee;
+    --corp-color: #4f46a0;
+    --single-color: #0d6b54;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 48px 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .header-left p {
+    font-size: 13px;
+    color: var(--text-2);
+    font-weight: 300;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .legend-dot.corp { background: var(--corp-color); }
+  .legend-dot.single { background: var(--single-color); }
+
+  .legend-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 48px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* Stack */
+  .stack { display: flex; flex-direction: column; }
+
+  .layer-wrap { position: relative; }
+
+  .layer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px 14px 48px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    position: relative;
+    user-select: none;
+  }
+
+  .layer:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .layer.active {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    box-shadow: 0 0 0 3px rgba(79,70,160,0.08);
+  }
+
+  .layer-num {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-3);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .layer.active .layer-num { color: var(--accent); }
+
+  .layer-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .layer.active .layer-title { color: var(--accent); }
+
+  .layer-desc {
+    font-size: 11.5px;
+    color: var(--text-2);
+    line-height: 1.4;
+    font-weight: 300;
+  }
+
+  .layer.active .layer-desc { color: var(--purple); opacity: 0.75; }
+
+  .dyn-badge {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 9.5px;
+    font-weight: 500;
+    padding: 1px 7px;
+    border-radius: 20px;
+    background: var(--success-bg);
+    color: var(--success);
+    letter-spacing: 0.02em;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .connector {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 22px;
+    height: 18px;
+  }
+
+  .connector-line {
+    width: 1px;
+    height: 100%;
+    background: var(--border-strong);
+  }
+
+  /* Branch split */
+  .branch-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .branch-col { display: flex; flex-direction: column; }
+
+  .branch-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 0 6px 4px;
+  }
+
+  .branch-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .branch-dot.corp { background: var(--corp-color); }
+  .branch-dot.single { background: var(--single-color); }
+
+  .branch-label-text {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  .branch-label-text.corp { color: var(--corp-color); }
+  .branch-label-text.single { color: var(--single-color); }
+
+  .branch-skip {
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 11px;
+    color: var(--text-3);
+    line-height: 1.4;
+    font-weight: 300;
+    font-style: italic;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: sticky;
+    top: 32px;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detail-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scope-pills {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .scope-pill {
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+    letter-spacing: 0.02em;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .scope-pill.corp { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
+  .scope-pill.single { border-color: var(--teal-border); color: var(--teal); background: var(--teal-bg); }
+  .scope-pill.both { border-color: var(--border-strong); color: var(--text-2); background: var(--surface2); }
+
+  .detail-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.2px;
+    margin-bottom: 0;
+  }
+
+  .detail-body { padding: 20px 28px; flex: 1; }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+
+  .tag {
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-weight: 400;
+    border: 1px solid;
+  }
+
+  .tag.purple { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
+  .tag.teal { background: var(--teal-bg); color: var(--teal); border-color: var(--teal-border); }
+  .tag.amber { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+  .tag.coral { background: var(--coral-bg); color: var(--coral); border-color: var(--coral-border); }
+  .tag.gray { background: var(--gray-tag-bg); color: var(--gray-tag); border-color: var(--gray-tag-border); }
+
+  .examples { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+
+  .ex-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .ex-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+
+  .ex-attrs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .ex-attr {
+    font-size: 11.5px;
+    color: var(--text-2);
+    font-weight: 300;
+  }
+
+  .ex-attr:not(:last-child)::after {
+    content: ' · ';
+    color: var(--text-3);
+    margin: 0 2px;
+  }
+
+  .insight {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.65;
+    font-weight: 300;
+    padding: 14px 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .insight strong { color: var(--text); font-weight: 500; }
+
+  .detail-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-3);
+    padding: 40px;
+    text-align: center;
+  }
+
+  .detail-empty .arrow { font-size: 20px; opacity: 0.4; }
+  .detail-empty p { font-size: 13px; font-weight: 300; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 16px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer p { font-size: 11.5px; color: var(--text-3); font-weight: 300; }
+
+  @media (max-width: 768px) {
+    header { padding: 20px 24px; flex-direction: column; align-items: flex-start; }
+    main { grid-template-columns: 1fr; padding: 24px; gap: 24px; }
+    .detail-panel { position: static; min-height: auto; }
+    footer { padding: 16px 24px; flex-direction: column; gap: 4px; align-items: flex-start; }
+  }
+
+  .layer { animation: fadeIn 0.3s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .detail-header, .detail-body { animation: slideIn 0.2s ease both; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(6px); } to { opacity: 1; transform: translateX(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>B2B telecom — dynamic hierarchy</h1>
+    <p>How the platform is structured from account to product — click any layer to explore</p>
+  </div>
+  <div class="header-right">
+    <div class="legend-item"><div class="legend-dot corp"></div> Corporate / multi-site</div>
+    <div class="legend-sep"></div>
+    <div class="legend-item"><div class="legend-dot single"></div> Single site</div>
+  </div>
+</header>
+
+<main>
+  <div class="stack">
+
+    <div class="layer-wrap">
+      <div class="layer" id="l-account" onclick="sel('account')">
+        <span class="layer-num">L1</span>
+        <div class="dyn-badge">dynamic</div>
+        <div class="layer-title">Account</div>
+        <div class="layer-desc">Corporate (multi-site) or Single Site — drives the structure beneath</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <div class="branch-row">
+      <div class="branch-col">
+        <div class="branch-header">
+          <div class="branch-dot corp"></div>
+          <span class="branch-label-text corp">Corporate</span>
+        </div>
+        <div class="layer" id="l-project" onclick="sel('project')">
+          <span class="layer-num">L2</span>
+          <div class="dyn-badge">dynamic</div>
+          <div class="layer-title">Project</div>
+          <div class="layer-desc">Groups sites — internet rollout or multi-site SD-WAN</div>
+        </div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-header">
+          <div class="branch-dot single"></div>
+          <span class="branch-label-text single">Single site</span>
+        </div>
+        <div class="branch-skip">No project layer — goes direct to solution or order</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <div class="layer-wrap">
+      <div class="layer" id="l-solution" onclick="sel('solution')">
+        <span class="layer-num">L3</span>
+        <div class="dyn-badge">dynamic</div>
+        <div class="layer-title">Solution</div>
+        <div class="layer-desc">Site-scoped — one or more packages for a single location</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <div class="layer-wrap">
+      <div class="layer" id="l-order" onclick="sel('order')">
+        <span class="layer-num">L4</span>
+        <div class="dyn-badge">dynamic</div>
+        <div class="layer-title">Order</div>
+        <div class="layer-desc">Commercial trigger — initial, change, renewal, or cease</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <div class="layer-wrap">
+      <div class="layer" id="l-package" onclick="sel('package')">
+        <span class="layer-num">L5</span>
+        <div class="dyn-badge">dynamic</div>
+        <div class="layer-title">Package</div>
+        <div class="layer-desc">Products bundled per customer need — composed at quote time</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <div class="layer-wrap">
+      <div class="layer" id="l-product" onclick="sel('product')">
+        <span class="layer-num">L6</span>
+        <div class="dyn-badge">dynamic</div>
+        <div class="layer-title">Products &amp; Attributes</div>
+        <div class="layer-desc">DIA, SIP, SD-WAN, managed services — each with its own attribute set</div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-line"></div></div>
+
+    <div class="layer-wrap">
+      <div class="layer" id="l-portal" onclick="sel('portal')">
+        <span class="layer-num">L7</span>
+        <div class="dyn-badge">dynamic</div>
+        <div class="layer-title">Portal &amp; UI</div>
+        <div class="layer-desc">Adapts by account type and role — AM, NOC, or customer</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-empty">
+      <div class="arrow">←</div>
+      <p>Select a layer to explore its role in the hierarchy</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>B2B Enterprise Telecom — Platform Concept</p>
+  <p>Everything is dynamic</p>
+</footer>
+
+<script>
+const data = {
+  account: {
+    title: "Account is the top of everything",
+    scope: "both",
+    tags: [["Corporate / multi-site","purple"],["Single Site","teal"],["account type drives structure","gray"]],
+    examples: [
+      { name: "Tesco PLC — Corporate", attrs: ["620 sites","multi-project","dedicated AM"] },
+      { name: "Highfield Dental — Single Site", attrs: ["1 location","DIA + SIP","self-serve portal"] }
+    ],
+    insight: "<strong>Account type isn't just a label — it determines what layers exist beneath it.</strong> A Corporate account unlocks Projects and multi-site Solutions. A Single Site account goes straight to a Solution or Order, keeping things simple and fast to provision."
+  },
+  project: {
+    title: "Projects group sites under a common programme",
+    scope: "corp",
+    tags: [["internet / access rollout","teal"],["multi-site SD-WAN","purple"],["phased delivery","amber"],["wave-based","coral"]],
+    examples: [
+      { name: "Type A — Internet rollout", attrs: ["120 retail branches","DIA per site","3 delivery waves"] },
+      { name: "Type B — SD-WAN deployment", attrs: ["42 sites","MPLS → SD-WAN","18-month programme"] }
+    ],
+    insight: "<strong>Projects exist to make multi-site complexity manageable.</strong> Rather than managing 120 individual orders separately, a Project groups them under a single programme — with shared phasing, reporting, and commercial oversight."
+  },
+  solution: {
+    title: "Solutions are site-scoped — one location, full picture",
+    scope: "both",
+    tags: [["connectivity","teal"],["voice","purple"],["managed services","amber"],["multi-package","coral"]],
+    examples: [
+      { name: "Manchester HQ", attrs: ["DIA 10G","SIP trunking ×200ch","managed firewall","SD-WAN hub"] },
+      { name: "Edinburgh Branch", attrs: ["DIA 100Mbps","4G failover","SIP ×20ch"] },
+      { name: "Single site — Highfield Dental", attrs: ["DIA 100Mbps","SIP ×5ch"] }
+    ],
+    insight: "<strong>A Solution captures everything being delivered to one location.</strong> It can hold multiple packages and span multiple orders over time. For Corporate accounts it sits within a Project; for Single Site it can stand alone."
+  },
+  order: {
+    title: "Orders are the commercial events within a solution",
+    scope: "both",
+    tags: [["initial supply","teal"],["change order","purple"],["renewal","amber"],["cease","coral"],["upgrade","gray"]],
+    examples: [
+      { name: "Order #4821 — initial", attrs: ["Site-in-a-Box","Manchester HQ","linked: SD-WAN Project"] },
+      { name: "Order #4822 — change", attrs: ["Upgrade DIA to 10G","amends #4821"] },
+      { name: "Order #4823 — renewal", attrs: ["Year 3","repriced","linked: Managed Services"] }
+    ],
+    insight: "<strong>A site's commercial life generates many orders — not just one.</strong> Each is anchored to the Solution it belongs to, so the full history is always traceable without manual cross-referencing."
+  },
+  package: {
+    title: "Packages are assembled at quote time, not pre-built",
+    scope: "both",
+    tags: [["connectivity only","teal"],["connectivity + voice","purple"],["site-in-a-box","amber"],["managed stack","coral"]],
+    examples: [
+      { name: "Branch connectivity", attrs: ["DIA 100Mbps","4G failover","managed router"] },
+      { name: "UC bundle", attrs: ["SIP ×50ch","DDI block","Teams Direct Routing"] },
+      { name: "Site-in-a-Box", attrs: ["DIA + 4G failover","SD-WAN CPE","managed firewall","SIP trunking"] }
+    ],
+    insight: "<strong>No two enterprise customers buy the same combination.</strong> Packages are configured from available products — account managers aren't constrained by rigid catalogue bundles or forced into multiple separate orders."
+  },
+  product: {
+    title: "Each product type defines its own attributes",
+    scope: "both",
+    tags: [["DIA","teal"],["SIP trunking","purple"],["SD-WAN","amber"],["managed firewall","coral"],["MPLS","gray"]],
+    examples: [
+      { name: "Dedicated Internet Access", attrs: ["bandwidth: 10M–100G","bearer: fibre / EFM","SLA: 99.95%","burstable: yes/no"] },
+      { name: "SIP Trunking", attrs: ["channels: 1–2000","DDI range","codec: G.711/G.729","failover: yes/no"] },
+      { name: "Managed SD-WAN", attrs: ["sites: 1–500","underlay: MPLS+4G","vendor: Meraki / Fortinet"] }
+    ],
+    insight: "<strong>A DIA circuit and a SIP trunk have nothing structurally in common.</strong> Each product type carries only the attributes relevant to quoting, provisioning, and assurance — no bloated universal schema, no blank fields."
+  },
+  portal: {
+    title: "The portal adapts to account type and role",
+    scope: "both",
+    tags: [["account manager","purple"],["NOC / ops","teal"],["enterprise customer","amber"],["single-site self-serve","gray"]],
+    examples: [
+      { name: "Account manager", attrs: ["pipeline, quotes, orders","solution health","renewal alerts"] },
+      { name: "NOC / ops", attrs: ["circuit status, alarms","ticket queue","change windows"] },
+      { name: "Enterprise customer admin", attrs: ["my sites, my services","invoices, usage","raise a fault"] }
+    ],
+    insight: "<strong>The portal isn't one screen for everyone.</strong> A Corporate customer sees projects, sites, and solutions. A Single Site customer sees their order and services. Each role sees a coherent view — without bespoke builds."
+  }
+};
+
+const scopeLabels = { both: "Corporate & Single Site", corp: "Corporate only", single: "Single Site only" };
+const scopeClass = { both: "both", corp: "corp", single: "single" };
+const layers = ['account','project','solution','order','package','product','portal'];
+
+function sel(key) {
+  layers.forEach(k => {
+    const el = document.getElementById('l-'+k);
+    if (el) el.classList.toggle('active', k === key);
+  });
+
+  const d = data[key];
+  const tagsHtml = d.tags.map(([t,c]) => `<span class="tag ${c}">${t}</span>`).join('');
+  const exHtml = d.examples.map(e =>
+    `<div class="ex-card">
+      <div class="ex-name">${e.name}</div>
+      <div class="ex-attrs">${e.attrs.map(a => `<span class="ex-attr">${a}</span>`).join('')}</div>
+    </div>`
+  ).join('');
+
+  document.getElementById('detail-panel').innerHTML = `
+    <div class="detail-header">
+      <div class="scope-pills"><span class="scope-pill ${scopeClass[d.scope]}">${scopeLabels[d.scope]}</span></div>
+      <div class="detail-title">${d.title}</div>
+    </div>
+    <div class="detail-body">
+      <div class="tags">${tagsHtml}</div>
+      <div class="examples">${exHtml}</div>
+      <div class="insight">${d.insight}</div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
